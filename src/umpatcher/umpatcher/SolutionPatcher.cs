@@ -19,6 +19,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 
 namespace UnityMonoDllSourceCodePatcher {
 	sealed class SolutionPatcher {
@@ -32,11 +33,28 @@ namespace UnityMonoDllSourceCodePatcher {
 		public SolutionPatcher(SolutionOptions solutionOptions) {
 			this.solutionOptions = solutionOptions ?? throw new ArgumentNullException(nameof(solutionOptions));
 			solutionDir = Path.GetDirectoryName(solutionOptions.SolutionFilename)!;
+
+			// If solution doesn't exist yet, create a fresh one.
+			try {
+				var fs = new FileStream(solutionOptions.SolutionFilename, FileMode.CreateNew, FileAccess.Write);
+
+				// Not sure if we actually need this "BOM", but all the existing solutions have it so ...
+				var bom = new byte[] { 0xEF, 0xBB, 0xBF };
+				fs.Write(bom, 0, bom.Length);
+
+				using var sw = new StreamWriter(fs);
+				sw.Write(new BlankSolution().TransformText());
+			} catch (IOException) {
+				// We'll just assume this is because it already exists.
+				// Anything else is probably catastrophic, at least as far as this program's job is concerned,
+				// and will present itself in other ways.
+			}
+
 			textFilePatcher = new TextFilePatcher(solutionOptions.SolutionFilename);
 			unityVersionDirGuid = Guid.NewGuid();
 		}
 
-		static string ToString(Guid guid) => guid.ToString("B").ToUpperInvariant();
+		public static string ToString(Guid guid) => guid.ToString("B").ToUpperInvariant();
 
 		public void Patch() {
 			AddProjects();
