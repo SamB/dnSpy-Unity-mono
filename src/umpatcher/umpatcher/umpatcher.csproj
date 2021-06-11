@@ -18,6 +18,32 @@
     <None Remove="App.config" Condition=" '$(TargetFramework)' != 'net48' " />
   </ItemGroup>
 
+  <!-- Begin templating stuff -->
+  <ItemGroup>
+    <PackageReference Include="System.CodeDom" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="BlankSolution.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>BlankSolution.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="BlankSolution.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BlankSolution.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <!-- End templating stuff -->
+  
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
